@@ -1,0 +1,20 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Главная</h1>
+  <p>
+    Тестовый текст
+    <em>Lorem ipsum</em>!
+  </p>
+  <h2>Что есть на сайте?</h2>
+  <p>Вот что:</p>
+  <ul>
+    <li><strong>Количество типов данных:</strong> {{ num_data_types }}</li>
+    <li><strong>Количество типов графиков:</strong> {{ num_graph_types }}</li>
+    <li><strong>Количество типов карт:</strong> {{ num_map_types }}</li>
+    <li><strong>Количество графиков:</strong> {{ num_graph_instances }}</li>
+    <li><strong>Количество карт:</strong> {{ num_map_instances }}</li>
+    <li><strong>Количество авторов:</strong> {{ num_authors }}</li>
+    <li><strong>Количество визитов:</strong> {{ num_visits }}</li>
+  </ul>
+{% endblock %}
