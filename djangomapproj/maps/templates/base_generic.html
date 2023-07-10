@@ -22,6 +22,7 @@
             <ul class="sidebar-nav">
               <li><a href="{% url 'index' %}">Главная</a></li>
               <li><a href="{% url 'authors' %}">Список авторов</a></li>
+              <li><a href="{% url 'map' %}">Та самая карта</a></li>
               {% if user.is_authenticated %}
                 <li>User: {{ user.get_username }}</li>
                 <li><a href="{% url 'my-graphs' %}">Мои графики</a></li>

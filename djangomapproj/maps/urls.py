@@ -10,3 +10,7 @@ urlpatterns = [
 urlpatterns += [
     path('mygraphs/', views.UserCreatedGraphListView.as_view(), name='my-graphs'),
 ]
+
+urlpatterns += [
+    path('map/', views.map, name='map'),
+]
