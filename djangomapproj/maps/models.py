@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 import uuid
+from django.contrib.auth.models import User
 # Create your models here.
 
 class DataType(models.Model):
@@ -12,6 +13,7 @@ class DataType(models.Model):
 class DataGraph(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     summary = models.TextField(max_length=10000, help_text='Описание графика')
     data_type = models.ForeignKey(DataType, on_delete=models.SET_NULL, null=True)
 
@@ -24,6 +26,7 @@ class DataGraph(models.Model):
 class DataMap(models.Model):
     title = models.CharField(max_length=200)
     author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     summary = models.TextField(max_length=10000, help_text='Описание карты')
     data_type = models.ForeignKey(DataType, on_delete=models.SET_NULL, null=True)
 
@@ -47,6 +50,7 @@ class Region(models.Model):
 
 class DataGraphInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text='Уникальный ID графика')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     region = models.ForeignKey('Region', on_delete=models.RESTRICT, null=True)
     federal_district = models.ForeignKey('FederalDistrict', on_delete=models.RESTRICT, null=True)
     data_graph = models.ForeignKey('DataGraph', on_delete=models.RESTRICT, null=True)
@@ -60,6 +64,7 @@ class DataGraphInstance(models.Model):
 
 class DataMapInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text='Уникальный ID карты')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     region = models.ForeignKey('Region', on_delete=models.RESTRICT, null=True)
     federal_district = models.ForeignKey('FederalDistrict', on_delete=models.RESTRICT, null=True)
     data_map = models.ForeignKey('DataMap', on_delete=models.RESTRICT, null=True)
@@ -72,6 +77,7 @@ class DataMapInstance(models.Model):
         return f'{self.data_map.title} {self.region} {self.federal_district} ({self.id})'
 
 class Author(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
 
@@ -83,3 +89,16 @@ class Author(models.Model):
 
     def __str__(self):
         return f'{self.last_name}, {self.first_name}'
+    
+class ParcedModel(models.Model):
+    name = models.CharField(max_length=200)
+    name_en = models.CharField(max_length=200)
+    geometry = models.CharField(max_length=20000)
+    rank = models.CharField(max_length=200)
+    federal_subject = models.CharField(max_length=200)
+    population_2023_estimate = models.CharField(max_length=200)
+    population_2021_census = models.CharField(max_length=200)
+    change =  models.CharField(max_length=200)
+    land_area_km2 = models.CharField(max_length=200)
+    pop_density_per_km2 = models.CharField(max_length=200)
+

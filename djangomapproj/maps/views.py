@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, DataGraphInstance, DataMapInstance, Author
 from django.views import generic
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 def index(request):
     num_data_types = DataType.objects.all().count()
@@ -31,4 +32,14 @@ class AuthorListView(generic.ListView):
 
 class AuthorDetailView(generic.DetailView):
     model = Author
+
+class UserCreatedGraphListView(LoginRequiredMixin,generic.ListView):
+    model = DataGraphInstance
+    template_name = 'maps/datagraphinstance_list_created_user.html'
+    paginate_by = 1
+
+    def get_queryset(self):
+        return (
+            DataGraphInstance.objects.filter(user=self.request.user)
+        )
 

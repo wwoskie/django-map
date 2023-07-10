@@ -1,11 +1,11 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, DataGraphInstance, DataMapInstance, Author
+from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, DataGraphInstance, DataMapInstance, Author, ParcedModel
 
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
-    list_display = ('last_name', 'first_name')
+    list_display = ('last_name', 'first_name', 'user')
 
 @admin.register(DataType)
 class DataTypeAdmin(admin.ModelAdmin):
@@ -41,7 +41,7 @@ class DataGraphInstanceAdmin(admin.ModelAdmin):
     list_filter = ('region', 'federal_district', 'data_graph', 'created')
     fieldsets = (
         ('Регион и ФО', {'fields': ('region', 'federal_district')}), 
-                 (None, {'fields': ('data_graph', 'created')}),)
+                 (None, {'fields': ('data_graph', 'created', 'user')}),)
     
 
 @admin.register(DataMapInstance)
@@ -51,3 +51,8 @@ class DataMapInstanceAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Регион и ФО', {'fields': ('region', 'federal_district')}), 
                  (None, {'fields': ('data_map', 'created')}),)
+    
+@admin.register(ParcedModel)
+class ParcedModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'population_2023_estimate', 'population_2021_census', 'change', 'land_area_km2', 'pop_density_per_km2')
+    list_filter = ('name', 'population_2023_estimate', 'population_2021_census', 'change', 'land_area_km2', 'pop_density_per_km2')
