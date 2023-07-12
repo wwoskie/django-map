@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
-import os
+from django.shortcuts import render
+import numpy as np
 import folium
-from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, DataGraphInstance, DataMapInstance, Author, ParcedModel
+from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, Author, ParcedModel
 from django.views import generic
 from django.contrib.auth.mixins import LoginRequiredMixin
 import pandas as pd
@@ -13,8 +13,8 @@ def index(request):
     num_data_types = DataType.objects.all().count()
     num_graph_types = DataGraph.objects.all().count()
     num_map_types = DataMap.objects.all().count()
-    num_graph_instances = DataGraphInstance.objects.all().count()
-    num_map_instances = DataMapInstance.objects.all().count()
+    #num_graph_instances = DataGraphInstance.objects.all().count()
+    #num_map_instances = DataMapInstance.objects.all().count()
     num_authors = Author.objects.all().count()
     num_visits = request.session.get('num_visits', 0)
     request.session['num_visits'] = num_visits + 1
@@ -23,8 +23,8 @@ def index(request):
         'num_data_types': num_data_types,
         'num_graph_types': num_graph_types,
         'num_map_types': num_map_types,
-        'num_graph_instances': num_graph_instances,
-        'num_map_instances': num_map_instances,
+        #'num_graph_instances': num_graph_instances,
+        #'num_map_instances': num_map_instances,
         'num_authors': num_authors,
         'num_visits': num_visits,
     }
@@ -38,7 +38,7 @@ class AuthorListView(generic.ListView):
 class AuthorDetailView(generic.DetailView):
     model = Author
 
-class UserCreatedGraphListView(LoginRequiredMixin,generic.ListView):
+'''class UserCreatedGraphListView(LoginRequiredMixin,generic.ListView):
     model = DataGraphInstance
     template_name = 'maps/datagraphinstance_list_created_user.html'
     paginate_by = 1
@@ -46,36 +46,38 @@ class UserCreatedGraphListView(LoginRequiredMixin,generic.ListView):
     def get_queryset(self):
         return (
             DataGraphInstance.objects.filter(user=self.request.user)
-        )
+        )'''
     
-def map(request):
+def map_detail_view(request, pk):
+    try:
+        map_parameter = DataMap.objects.get(pk=pk).key_dataset_on
+    except DataMap.DoesNotExist:
+        raise Http404('Карта не существует')
+
     def similar(a, b):
         return SequenceMatcher(None, a, b).ratio()
     
-    R_border_style = {
-        'color': 'red',
-        'weight': 1,
-        'fill': False
-    }
+    print(map_parameter)
+    
 
     m = folium.Map(zoom_start=5, 
                               tiles='cartodbpositron', 
                               location = [55.799534, 37.460218], 
                               prefer_canvas=True,
                               max_bounds=True)
-    adm_lvl_4 = gpd.read_file('admin_level_4.geojson')
+    
+    queryset = ParcedModel.objects.all()
+    pop_data = read_frame(queryset)
+    pop_data.dropna(inplace=True)
+
+    pop_data = pop_data[['federal_subject', map_parameter]]
+    #pop_data[map_parameter] = pd.to_numeric(pop_data[map_parameter], errors='coerce').astype('Int64')
+    pop_data[map_parameter] = pop_data[map_parameter].astype('int')
+    #pop_data.to_csv('popdata.csv', sep='\t')
+    
+    adm_lvl_4 = gpd.read_file('../data/admin_level_4.geojson')
     adm_lvl_4 = adm_lvl_4[adm_lvl_4['addr:country'] == 'RU']
     adm_lvl_4 = adm_lvl_4[['name', 'name:en', 'geometry']]
-    
-    '''qs = ParcedModel.objects.all()
-    pop_data = read_frame(qs)
-
-    pop_data.to_csv('table_before.csv', index=False, sep='\t')
-
-    pop_data.dropna(inplace = True)
-
-    pop_data.to_csv('table_after.csv', index=False, sep='\t')
-    
     
 
     pop_list = list(pop_data['federal_subject'])
@@ -106,36 +108,60 @@ def map(request):
     match_df = pd.DataFrame({'match_name': match_name, 'match_geo': match_geo})
     pop_data = pop_data.merge(match_df, how="left", left_on=['federal_subject'], right_on=['match_name'])
     table = adm_lvl_4.merge(pop_data, how="left", left_on=['name:en'], right_on=['match_geo'])
-    table.drop(columns=['match_name', 'match_geo'], inplace=True)
+    #table.drop(columns=['match_name', 'match_geo'], inplace=True)
     table.rename(columns={'name:en': 'name_en'}, inplace=True)
-    table.dropna(inplace = True)
+    #table.to_csv('table.csv', sep='\t')
 
-    table.to_csv('table_after_after.csv', index=False, sep='\t')'''
-    '''
-    
     folium.Choropleth(
         geo_data=table,
         name='Population',
         data=table,
-        columns=['name_en', 'population_2023_estimate'],
-        key_on='feature.properties.name',
-        fill_color='OrRd',
-        fill_opacity=0.7,
+        columns=['name_en', map_parameter],
+        key_on='feature.properties.name_en',
+        fill_color='Purples',
+        fill_opacity=1,
         line_opacity=0.2,
-        legend_name='rus_pop'
+        bins=np.arange(0, 15000000, 1000000),
+        legend_name=map_parameter,
     ).add_to(m)
-    '''
 
-    folium.GeoJson(data = 'admin_level_4.geojson',
-               name = 'Регионы',
-               style_function=lambda x:R_border_style).add_to(m)
+    style_function = lambda x: {'fillColor': '#ffffff', 
+                            'color':'#000000', 
+                            'fillOpacity': 0.1, 
+                            'weight': 0.1}
     
-    folium.LayerControl().add_to(m)
+    highlight_function = lambda x: {'fillColor': '#000000', 
+                                'color':'#000000', 
+                                'fillOpacity': 0.50, 
+                                'weight': 0.1}
+
+    highlight = folium.features.GeoJson(
+        data = table,
+        style_function=style_function, 
+        control=False,
+        highlight_function=highlight_function, 
+        tooltip=folium.features.GeoJsonTooltip(
+            fields=['name_en', map_parameter],
+            aliases=['Region name', 'Population'],
+            style=("background-color: white; color: #333333; font-family: arial; font-size: 12px; padding: 10px;") 
+        ))
+    
+    #folium.LayerControl().add_to(m)
+    m.add_child(highlight)
+    m.keep_in_front(highlight)
     
     m=m._repr_html_()
 
-    context = {'my_map': m}
+    context = {'my_map': m,
+               'map_parameter': map_parameter,
+               'map_title': DataMap.objects.get(pk=pk).title,
+               'summary': DataMap.objects.get(pk=pk).summary}
 
-    return render(request,'maps/map.html', context=context)
+    return render(request,'maps/map_detail.html', context=context)
+
+class MapsListView(generic.ListView):
+    model = DataMap
+    context_object_name = 'maps_list'
+    template_name = 'maps/maps_list.html'
 
 

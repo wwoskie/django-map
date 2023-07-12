@@ -6,11 +6,5 @@
   <div style="margin-left:20px;margin-top:20px">
     <h4>Графики</h4>
 
-    {% for author_graph in author.datagraph_set.all %}
-        <p>{{ author_graph }}</p>
-        {% for graph in author_graph.datagraphinstance_set.all %}
-          <a href="{{ graph.get_absolute_url }}">{{ graph}}</a>
-        {% endfor %}
-    {% endfor %}
   </div>
 {% endblock %}

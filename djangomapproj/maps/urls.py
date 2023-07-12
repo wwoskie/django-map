@@ -7,10 +7,14 @@ urlpatterns = [
     path('author/<int:pk>', views.AuthorDetailView.as_view(), name='author-detail'),
 ]
 
-urlpatterns += [
+'''urlpatterns += [
     path('mygraphs/', views.UserCreatedGraphListView.as_view(), name='my-graphs'),
+]'''
+
+urlpatterns += [
+    path('maps_list/', views.MapsListView.as_view(), name='maps_list'),
 ]
 
 urlpatterns += [
-    path('map/', views.map, name='map'),
+    path('maps_list/<str:pk>', views.map_detail_view, name='map-detail'),
 ]

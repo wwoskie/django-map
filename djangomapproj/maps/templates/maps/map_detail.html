@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>Я карта я карта!</h1>
-  {{ my_map|safe }}   
+  <h1>{{ map_title }}</h1>
+  {{ my_map|safe }}  
+  {{ summary }}
 {% endblock %}

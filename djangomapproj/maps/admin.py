@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, DataGraphInstance, DataMapInstance, Author, ParcedModel
+from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, Author, ParcedModel
 
 @admin.register(Author)
 class AuthorAdmin(admin.ModelAdmin):
@@ -11,21 +11,23 @@ class AuthorAdmin(admin.ModelAdmin):
 class DataTypeAdmin(admin.ModelAdmin):
     pass
 
-class  DataGraphInstanceInline(admin.TabularInline):
+'''class  DataGraphInstanceInline(admin.TabularInline):
     model = DataGraphInstance
-    extra = 0
+    extra = 0'''
 
 @admin.register(DataGraph)
 class DataGraphAdmin(admin.ModelAdmin):
-    inlines = [DataGraphInstanceInline]
+    pass
+    #inlines = [DataGraphInstanceInline]
 
-class  DataMapInstanceInline(admin.TabularInline):
+'''class  DataMapInstanceInline(admin.TabularInline):
     model = DataMapInstance
-    extra = 0
+    extra = 0'''
 
 @admin.register(DataMap)
 class DataMapAdmin(admin.ModelAdmin):
-    inlines = [DataMapInstanceInline]
+    pass
+    #inlines = [DataMapInstanceInline]
 
 @admin.register(FederalDistrict)
 class FederalDistrictAdmin(admin.ModelAdmin):
@@ -35,22 +37,23 @@ class FederalDistrictAdmin(admin.ModelAdmin):
 class RegionAdmin(admin.ModelAdmin):
     pass
 
-@admin.register(DataGraphInstance)
+'''@admin.register(DataGraphInstance)
 class DataGraphInstanceAdmin(admin.ModelAdmin):
-    list_display = ('region', 'federal_district', 'data_graph', 'created')
-    list_filter = ('region', 'federal_district', 'data_graph', 'created')
+    list_display = ('region', 'federal_district', 'created')
+    list_filter = ('region', 'federal_district', 'created')
     fieldsets = (
         ('Регион и ФО', {'fields': ('region', 'federal_district')}), 
-                 (None, {'fields': ('data_graph', 'created', 'user')}),)
+                 (None, {'fields': ('created', 'user')}),)'''
     
 
-@admin.register(DataMapInstance)
+'''@admin.register(DataMapInstance)
 class DataMapInstanceAdmin(admin.ModelAdmin):
-    list_display = ('region', 'federal_district', 'data_map', 'created')
-    list_filter = ('region', 'federal_district', 'data_map', 'created')
+    list_display = ('region', 'federal_district', 'created')
+    list_filter = ('region', 'federal_district', 'created')
     fieldsets = (
         ('Регион и ФО', {'fields': ('region', 'federal_district')}), 
-                 (None, {'fields': ('data_map', 'created')}),)
+                 (None, {'fields': ('created')}),)
+                 '''
     
 @admin.register(ParcedModel)
 class ParcedModelAdmin(admin.ModelAdmin):

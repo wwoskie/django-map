@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Список доступных карт:</h1>
+  {% if maps_list %}
+    <ul>
+      {% for map in maps_list %}
+      <li>
+        <a href="{{ map.key_dataset_on }}">{{ map.title }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Пока что ни одной карты!</p>
+  {% endif %}
+{% endblock %}
