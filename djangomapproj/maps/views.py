@@ -1,20 +1,30 @@
 from django.shortcuts import render
 import numpy as np
 import folium
-from .models import DataType, DataGraph, DataMap, FederalDistrict, Region, Author, ParcedModel
+from .models import DataType, DataGraph, DataMap, Author, ParcedModel
 from django.views import generic
-from django.contrib.auth.mixins import LoginRequiredMixin
 import pandas as pd
 import geopandas as gpd
 from django_pandas.io import read_frame
+from django.http import Http404
 from difflib import SequenceMatcher
+from math import log10, floor, ceil
+
+def find_exp(number):
+    base10 = log10(number)
+    return floor(base10)
+
+def find_exp2(number):
+    base10 = log10(number)
+    return base10
+
+def similar(a, b):
+    return SequenceMatcher(None, a, b).ratio()
 
 def index(request):
     num_data_types = DataType.objects.all().count()
     num_graph_types = DataGraph.objects.all().count()
     num_map_types = DataMap.objects.all().count()
-    #num_graph_instances = DataGraphInstance.objects.all().count()
-    #num_map_instances = DataMapInstance.objects.all().count()
     num_authors = Author.objects.all().count()
     num_visits = request.session.get('num_visits', 0)
     request.session['num_visits'] = num_visits + 1
@@ -23,8 +33,6 @@ def index(request):
         'num_data_types': num_data_types,
         'num_graph_types': num_graph_types,
         'num_map_types': num_map_types,
-        #'num_graph_instances': num_graph_instances,
-        #'num_map_instances': num_map_instances,
         'num_authors': num_authors,
         'num_visits': num_visits,
     }
@@ -37,28 +45,12 @@ class AuthorListView(generic.ListView):
 
 class AuthorDetailView(generic.DetailView):
     model = Author
-
-'''class UserCreatedGraphListView(LoginRequiredMixin,generic.ListView):
-    model = DataGraphInstance
-    template_name = 'maps/datagraphinstance_list_created_user.html'
-    paginate_by = 1
-
-    def get_queryset(self):
-        return (
-            DataGraphInstance.objects.filter(user=self.request.user)
-        )'''
     
 def map_detail_view(request, pk):
     try:
         map_parameter = DataMap.objects.get(pk=pk).key_dataset_on
     except DataMap.DoesNotExist:
         raise Http404('Карта не существует')
-
-    def similar(a, b):
-        return SequenceMatcher(None, a, b).ratio()
-    
-    print(map_parameter)
-    
 
     m = folium.Map(zoom_start=5, 
                               tiles='cartodbpositron', 
@@ -67,14 +59,13 @@ def map_detail_view(request, pk):
                               max_bounds=True)
     
     queryset = ParcedModel.objects.all()
+    map_title = DataMap.objects.get(pk=pk).title
     pop_data = read_frame(queryset)
     pop_data.dropna(inplace=True)
 
     pop_data = pop_data[['federal_subject', map_parameter]]
-    #pop_data[map_parameter] = pd.to_numeric(pop_data[map_parameter], errors='coerce').astype('Int64')
-    pop_data[map_parameter] = pop_data[map_parameter].astype('int')
-    #pop_data.to_csv('popdata.csv', sep='\t')
-    
+    pop_data[map_parameter] = pop_data[map_parameter].astype('float')
+
     adm_lvl_4 = gpd.read_file('../data/admin_level_4.geojson')
     adm_lvl_4 = adm_lvl_4[adm_lvl_4['addr:country'] == 'RU']
     adm_lvl_4 = adm_lvl_4[['name', 'name:en', 'geometry']]
@@ -93,7 +84,6 @@ def map_detail_view(request, pk):
                 match_name.append(df_name)
                 match_geo.append(geojson_name)
             ratio_dct[geojson_name] = similar(df_name, geojson_name)
-        dict_max = max(ratio_dct.values())
         ratio_dct_all[df_name] = ratio_dct
     
     match_matrix = pd.DataFrame(ratio_dct_all)
@@ -108,22 +98,31 @@ def map_detail_view(request, pk):
     match_df = pd.DataFrame({'match_name': match_name, 'match_geo': match_geo})
     pop_data = pop_data.merge(match_df, how="left", left_on=['federal_subject'], right_on=['match_name'])
     table = adm_lvl_4.merge(pop_data, how="left", left_on=['name:en'], right_on=['match_geo'])
-    #table.drop(columns=['match_name', 'match_geo'], inplace=True)
     table.rename(columns={'name:en': 'name_en'}, inplace=True)
-    #table.to_csv('table.csv', sep='\t')
 
-    folium.Choropleth(
+    choro = folium.Choropleth(
+        line_weight=1.5,
+        line_color='grey',
         geo_data=table,
-        name='Population',
+        name=map_title,
         data=table,
         columns=['name_en', map_parameter],
         key_on='feature.properties.name_en',
         fill_color='Purples',
         fill_opacity=1,
         line_opacity=0.2,
-        bins=np.arange(0, 15000000, 1000000),
-        legend_name=map_parameter,
-    ).add_to(m)
+        bins=50,
+        use_jenks=True,
+        legend_name=map_title,
+    )
+
+
+    for key in choro._children:
+        if key.startswith('color_map'):
+            del(choro._children[key])
+    
+
+    choro.add_to(m)
 
     style_function = lambda x: {'fillColor': '#ffffff', 
                             'color':'#000000', 
@@ -142,7 +141,7 @@ def map_detail_view(request, pk):
         highlight_function=highlight_function, 
         tooltip=folium.features.GeoJsonTooltip(
             fields=['name_en', map_parameter],
-            aliases=['Region name', 'Population'],
+            aliases=['Region name', map_title],
             style=("background-color: white; color: #333333; font-family: arial; font-size: 12px; padding: 10px;") 
         ))
     

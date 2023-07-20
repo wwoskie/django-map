@@ -12,10 +12,7 @@ class DataType(models.Model):
     
 class DataGraph(models.Model):
     title = models.CharField(max_length=200)
-    #author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True)
-    #user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     summary = models.TextField(max_length=10000, help_text='Описание графика')
-    #data_type = models.ForeignKey(DataType, on_delete=models.SET_NULL, null=True)
     key_dataset_on = models.CharField(max_length=200, primary_key=True, default='0000000')
 
     def __str__(self):
@@ -26,10 +23,7 @@ class DataGraph(models.Model):
     
 class DataMap(models.Model):
     title = models.CharField(max_length=200)
-    #author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True)
-    #user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     summary = models.TextField(max_length=10000, help_text='Описание карты')
-    #data_type = models.ForeignKey(DataType, on_delete=models.SET_NULL, null=True)
     key_dataset_on = models.CharField(max_length=200, primary_key=True, default='0000000')
 
     def __str__(self):
@@ -49,34 +43,6 @@ class Region(models.Model):
 
     def __str__(self):
         return self.name
-
-'''class DataGraphInstance(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text='Уникальный ID графика')
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    region = models.ForeignKey('Region', on_delete=models.RESTRICT, null=True)
-    federal_district = models.ForeignKey('FederalDistrict', on_delete=models.RESTRICT, null=True)
-    created = models.DateField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['created']
-
-    def __str__(self):
-        return f'{self.region} {self.federal_district} ({self.id})'
-    '''
-
-'''class DataMapInstance(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, help_text='Уникальный ID карты')
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    region = models.ForeignKey('Region', on_delete=models.RESTRICT, null=True)
-    federal_district = models.ForeignKey('FederalDistrict', on_delete=models.RESTRICT, null=True)
-    created = models.DateField(null=True, blank=True)
-
-    class Meta:
-        ordering = ['created']
-
-    def __str__(self):
-        return f'{self.region} {self.federal_district} ({self.id})'
-    '''
 
 class Author(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)

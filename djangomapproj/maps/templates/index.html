@@ -1,18 +1,38 @@
 {% extends "base_generic.html" %}
 
+{% block title %}
+  <title>Main</title>
+{% endblock %}
+
 {% block content %}
-  <h1>Главная</h1>
-  <p>
-    Тестовый текст
-    <em>Lorem ipsum</em>!
-  </p>
-  <h2>Что есть на сайте?</h2>
-  <p>Вот что:</p>
-  <ul>
-    <li><strong>Количество типов данных:</strong> {{ num_data_types }}</li>
-    <li><strong>Количество типов графиков:</strong> {{ num_graph_types }}</li>
-    <li><strong>Количество типов карт:</strong> {{ num_map_types }}</li>
-    <li><strong>Количество авторов:</strong> {{ num_authors }}</li>
-    <li><strong>Количество визитов:</strong> {{ num_visits }}</li>
+{% load static %}
+<link rel="stylesheet" href="{% static 'maps/css/index.css' %}">
+  <h1 class="content-title">Main</h1>
+  <ul class="tiles">
+    <li class="tile">
+      <a class="tile__container-link" href="{% url 'maps_list' %}">
+				<h2 class="tile__title">Maps</h2>
+				<!-- <img class="cover__background" src="./images/cover-trains.jpg"> -->
+			</a>
+    </li>
+    <li class="tile">
+      <a class="tile__container-link" href="{% url 'maps_list' %}">
+				<h2 class="tile__title">Maps</h2>
+				<!-- <img class="cover__background" src="./images/cover-trains.jpg"> -->
+			</a>
+    </li>
+    <li class="tile">
+      <a class="tile__container-link" href="{% url 'maps_list' %}">
+				<h2 class="tile__title">Maps</h2>
+				<!-- <img class="cover__background" src="./images/cover-trains.jpg"> -->
+			</a>
+    </li>
+    <li class="tile">
+      <a class="tile__container-link" href="{% url 'maps_list' %}">
+				<h2 class="tile__title">Maps</h2>
+				<!-- <img class="cover__background" src="./images/cover-trains.jpg"> -->
+			</a>
+    </li>
   </ul>
+
 {% endblock %}
